@@ -22,8 +22,8 @@ az config set core.only_show_errors=yes
 PREFIX=kubecon
 
 LOCATION=`readinput "Location" "eastus"`
-DNSZONE=`readinput "DNS Zone" "aks.azure.sabbour.me"`
-DNSZONE_RESOURCEGROUP=`readinput "DNS Zone Resource Group" "azure.sabbour.me-rg"`
+DNSZONE=`readinput "DNS Zone" "aks.azure.kevintest.me"`
+DNSZONE_RESOURCEGROUP=`readinput "DNS Zone Resource Group" "kevintest"`
 PREFIX=`readinput "Prefix" "${PREFIX}"`
 RANDOMSTRING=`readinput "Random string" "$(mktemp --dry-run XXX | tr '[:upper:]' '[:lower:]')"`
 IDENTIFIER="${PREFIX}${RANDOMSTRING}"
@@ -158,7 +158,7 @@ echo ""
 echo "Creating user node pools 1/4"
 az aks nodepool add \
   -g ${CLUSTER_RG} \
-  -n selftune1 \
+  -n test1 \
   --cluster-name ${CLUSTER_NAME} \
   --enable-cluster-autoscaler \
   --min-count 1 \
@@ -169,7 +169,7 @@ echo ""
 echo "Creating user node pools 2/4"
 az aks nodepool add \
   -g ${CLUSTER_RG} \
-  -n selftune2 \
+  -n test2 \
   --cluster-name ${CLUSTER_NAME} \
   --enable-cluster-autoscaler \
   --min-count 1 \
@@ -180,7 +180,7 @@ echo ""
 echo "Creating user node pools 3/4"
 az aks nodepool add \
   -g ${CLUSTER_RG} \
-  -n selftune3 \
+  -n test3 \
   --cluster-name ${CLUSTER_NAME} \
   --enable-cluster-autoscaler \
   --min-count 1 \
@@ -191,7 +191,7 @@ echo ""
 echo "Creating user node pools 4/4"
 az aks nodepool add \
   -g ${CLUSTER_RG} \
-  -n selftune4 \
+  -n test4 \
   --cluster-name ${CLUSTER_NAME} \
   --enable-cluster-autoscaler \
   --min-count 1 \
