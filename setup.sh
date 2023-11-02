@@ -23,7 +23,7 @@ PREFIX=kubecon
 
 LOCATION=`readinput "Location" "eastus"`
 DNSZONE=`readinput "DNS Zone" "aks.azure.sabbour.me"`
-DNSZONE_RESOURCEGROUP=`readinput "DNS Zone Resource Group" "kevintest"`
+DNSZONE_RESOURCEGROUP=`readinput "DNS Zone Resource Group" "azure.sabbour.me-rg"`
 PREFIX=`readinput "Prefix" "${PREFIX}"`
 RANDOMSTRING=`readinput "Random string" "$(mktemp --dry-run XXX | tr '[:upper:]' '[:lower:]')"`
 IDENTIFIER="${PREFIX}${RANDOMSTRING}"
