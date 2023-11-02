@@ -22,7 +22,7 @@ az config set core.only_show_errors=yes
 PREFIX=kubecon
 
 LOCATION=`readinput "Location" "eastus"`
-DNSZONE=`readinput "DNS Zone" "aks.azure.kevintest.me"`
+DNSZONE=`readinput "DNS Zone" "aks.azure.sabbour.me"`
 DNSZONE_RESOURCEGROUP=`readinput "DNS Zone Resource Group" "kevintest"`
 PREFIX=`readinput "Prefix" "${PREFIX}"`
 RANDOMSTRING=`readinput "Random string" "$(mktemp --dry-run XXX | tr '[:upper:]' '[:lower:]')"`
