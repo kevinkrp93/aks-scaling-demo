@@ -25,39 +25,39 @@ spec:
         prometheus.io/port: "80"
     spec:
       volumes:
-        - name: secret-volume
-          secret:
-            secretName: dotfile-secret
+      - name: secret-volume
+        secret:
+          secretName: dotfile-secret
       containers:
-        - name: dotfile-test-container
+      - name: dotfile-test-container
         image: registry.k8s.io/busybox
         command:
-          - ls
-          - "-l"
-          - "/etc/secret-volume"
-        - name: serverloader
-          image: ghcr.io/sabbour/aks-scaling-demo:main
-          resources:
-            requests:
-              cpu: 500m
-              memory: 100Mi
-            limits:
-              cpu: 4000m
-              memory: 300Mi
-          volumeMounts:
-            - name: secret-volume
-              readOnly: true
-              mountPath: "/etc/secret-volume"
-          imagePullPolicy: Always
-          ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /stats
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /stats
-              port: http
+        - ls
+        - "-l"
+        - "/etc/secret-volume"
+      - name: serverloader
+        image: ghcr.io/sabbour/aks-scaling-demo:main
+        resources:
+          requests:
+            cpu: 500m
+            memory: 100Mi
+          limits:
+            cpu: 4000m
+            memory: 300Mi
+        volumeMounts:
+        - name: secret-volume
+          readOnly: true
+          mountPath: "/etc/secret-volume"
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /stats
+            port: http
+        readinessProbe:
+          httpGet:
+            path: /stats
+            port: http
