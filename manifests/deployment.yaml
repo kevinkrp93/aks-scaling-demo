@@ -25,9 +25,9 @@ spec:
         prometheus.io/port: "80"
     spec:
       volumes:
-      - name: secret-volume
-        secret:
-          secretName: dotfile-secret
+        - name: secret-volume
+          secret:
+            secretName: dotfile-secret
       containers:
         - name: dotfile-test-container
         image: registry.k8s.io/busybox
