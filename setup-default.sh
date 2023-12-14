@@ -155,48 +155,58 @@ while [[ "$(az aks show -n ${CLUSTER_NAME} -g ${CLUSTER_RG} --query 'provisionin
 done
 
 echo ""
-echo "Creating user node pools 1/4"
+echo "Creating user node pools 1/5"
 az aks nodepool add \
   -g ${CLUSTER_RG} \
-  -n selftune1 \
+  -n test1 \
   --cluster-name ${CLUSTER_NAME} \
   --enable-cluster-autoscaler \
   --min-count 1 \
-  --max-count 30 \
-  --node-vm-size Standard_B4ms
+  --max-count 1000 \
+  --node-vm-size Standard_B2ms
 
 echo ""
-echo "Creating user node pools 2/4"
+echo "Creating user node pools 2/5"
 az aks nodepool add \
   -g ${CLUSTER_RG} \
-  -n selftune2 \
+  -n test2 \
   --cluster-name ${CLUSTER_NAME} \
   --enable-cluster-autoscaler \
   --min-count 1 \
-  --max-count 30 \
-  --node-vm-size Standard_B4ms
+  --max-count 1000 \
+  --node-vm-size Standard_B2ms
 
 echo ""
-echo "Creating user node pools 3/4"
+echo "Creating user node pools 3/5"
 az aks nodepool add \
   -g ${CLUSTER_RG} \
-  -n selftune3 \
+  -n test3 \
   --cluster-name ${CLUSTER_NAME} \
   --enable-cluster-autoscaler \
   --min-count 1 \
-  --max-count 30 \
-  --node-vm-size Standard_B4ms
+  --max-count 1000 \
+  --node-vm-size Standard_B2ms
 
 echo ""
-echo "Creating user node pools 4/4"
+echo "Creating user node pools 4/5"
 az aks nodepool add \
   -g ${CLUSTER_RG} \
-  -n selftune4 \
+  -n test4 \
   --cluster-name ${CLUSTER_NAME} \
   --enable-cluster-autoscaler \
   --min-count 1 \
-  --max-count 30 \
-  --node-vm-size Standard_B4ms
+  --max-count 1000 \
+  --node-vm-size Standard_DDSV5
+
+echo "Creating user node pools 5/5"
+az aks nodepool add \
+  -g ${CLUSTER_RG} \
+  -n test5 \
+  --cluster-name ${CLUSTER_NAME} \
+  --enable-cluster-autoscaler \
+  --min-count 1 \
+  --max-count 995 \
+  --node-vm-size Standard_DDSV5
 
 
 echo ""
