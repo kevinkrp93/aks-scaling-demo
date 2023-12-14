@@ -22,13 +22,13 @@ az config set core.only_show_errors=yes
 PREFIX=kubecon
 
 LOCATION=`readinput "Location" "eastus"`
-DNSZONE=`readinput "DNS Zone" "aks.azure.sabbour.me"`
-DNSZONE_RESOURCEGROUP=`readinput "DNS Zone Resource Group" "azure.sabbour.me-rg"`
+DNSZONE=`readinput "DNS Zone" "aks.azure.kevin.me"`
+DNSZONE_RESOURCEGROUP=`readinput "DNS Zone Resource Group" "5kloadtest"`
 PREFIX=`readinput "Prefix" "${PREFIX}"`
 RANDOMSTRING=`readinput "Random string" "$(mktemp --dry-run XXX | tr '[:upper:]' '[:lower:]')"`
 IDENTIFIER="${PREFIX}${RANDOMSTRING}"
 
-CLUSTER_RG=`readinput "Resource group" "${IDENTIFIER}-rg"`
+CLUSTER_RG="5kloadtest"
 CLUSTER_NAME="${IDENTIFIER}"
 DEPLOYMENT_NAME="${IDENTIFIER}-deployment"
 HOSTNAME="${IDENTIFIER}.${DNSZONE}"
@@ -146,7 +146,7 @@ az aks create -n ${CLUSTER_NAME} -g ${CLUSTER_RG} \
 --kubernetes-version ${LATEST_K8S_VERSION} \
 --enable-cluster-autoscaler \
 --min-count 1 \
---max-count 5
+--max-count 20
 
 # Wait until the provisioning state of the cluster is not updating
 echo "Waiting for the cluster to be ready"
@@ -284,38 +284,12 @@ az aks get-credentials -n ${CLUSTER_NAME} -g ${CLUSTER_RG}
 
 END="$(date +%s)"
 DURATION=$[ ${END} - ${START} ]
+echo "Will later update the KEDA TriggerAuthentication to use this client identity ${KEDA_UAMI_CLIENTID}"
+echo "Will later update the scaledobject - Azuremonitor prom endpoint to use this client identity ${AZUREMONITOR_PROM_ENDPOINT}"
+echo "Will later update the hostname in ingress to use this client identity ${HOSTNAME}"
 
-echo ""
-echo "========================================================"
-echo "|                   SETUP COMPLETED                    |"
-echo "========================================================"
-echo ""
-echo "Total time elapsed: $(( DURATION / 60 )) minutes"
-
-echo ""
-echo "========================================================"
-echo "|                  UPDATING MANIFESTS                  |"
-echo "========================================================"
-echo ""
-echo "Updating the manifests/scaledobject.yaml file with Prometheus query endpoint > manifests/generated/scaledobject.yaml "
-yq "(.spec.triggers.[] | select(.type == \"prometheus\")).metadata.serverAddress |= \"${AZUREMONITOR_PROM_ENDPOINT}\"" manifests/scaledobject.yaml > manifests/generated/scaledobject.yaml
-echo "Updating the manifests/triggerauthentication.yaml file with KEDA client id > manifests/generated/triggerauthentication.yaml"
-yq "(.spec.podIdentity.identityId) |= \"${KEDA_UAMI_CLIENTID}\"" manifests/triggerauthentication.yaml > manifests/generated/triggerauthentication.yaml
-echo "Updating the manifests/ingress.yaml file with hostname > manifests/generated/ingress.yaml"
-yq "(.spec.rules[0]).host |= \"${HOSTNAME}\"" manifests/ingress.yaml > manifests/generated/ingress.yaml
-
-echo ""
-echo "========================================================"
-echo "|       DEPLOYING THE PROMETHEUS SCRAPING CONFIG       |"
-echo "========================================================"
-echo ""
+echo "
 kubectl apply -f ./manifests/config/ama-metrics-settings.config.yaml
-
-echo ""
-echo "========================================================"
-echo "|               DEPLOYING THE APPLICATION              |"
-echo "========================================================"
-echo ""
 kubectl apply -f ./manifests/namespace.yaml
 kubectl apply -f ./manifests/deployment.yaml
 kubectl apply -f ./manifests/service.yaml
@@ -323,56 +297,5 @@ kubectl apply -f ./manifests/pdb.yaml
 kubectl apply -f ./manifests/generated/ingress.yaml
 kubectl apply -f ./manifests/generated/triggerauthentication.yaml
 kubectl apply -f ./manifests/generated/scaledobject.yaml
+kubectl rollout restart deployment.apps/keda-operator -n kube-system "
 
-# Force a restart for the keda operator deployment to pick up the new trigger authentication
-kubectl rollout restart deployment.apps/keda-operator -n kube-system
-
-echo ""
-echo "========================================================"
-echo "|                GETTING THE ENDPOINTS                 |"
-echo "========================================================"
-echo ""
-INGRESS_IP=""
-echo "Waiting for the ingress to get an IP address"
-while [ -z $INGRESS_IP ]
-do
-    INGRESS_IP=$(kubectl get ingress serverloader --namespace=serverloader -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
-    sleep 5
-done
-
-echo "Waiting for the A record to be created in the DNS zone"
-while [[ "$(az network dns record-set a list -g ${DNSZONE_RESOURCEGROUP} -z ${DNSZONE} --query "[?name=='${IDENTIFIER}'].provisioningState" -o tsv)" != "Succeeded" ]]; do
-    sleep 5
-done
-
-echo ""
-echo "========================================================"
-echo "|                 TEST THE APPLICATION                 |"
-echo "========================================================"
-echo ""
-echo "curl -k http://${INGRESS_IP}/workout -H \"Host: ${HOSTNAME}\""
-echo "curl -k http://${INGRESS_IP}/metrics -H \"Host: ${HOSTNAME}\""
-echo "curl -k http://${INGRESS_IP}/stats -H \"Host: ${HOSTNAME}\""
-echo ""
-echo "curl -k http://${HOSTNAME}/workout"
-echo "curl -k http://${HOSTNAME}/metrics"
-echo "curl -k http://${HOSTNAME}/stats"
-echo ""
-echo "Grafana dashboard: ${GRAFANA_URL}"
-echo ""
-echo ""
-echo "========================================================"
-echo "|               CLEAN UP AFTER YOU ARE DONE            |"
-echo "========================================================"
-echo ""
-echo "Delete the ${CLUSTER_RG} resource group when you are done by running:"
-echo "az group delete --name ${CLUSTER_RG} --no-wait"
-echo ""
-echo "Delete the ${HOSTNAME} records when you are done by running:"
-echo "az network dns record-set a delete -g ${DNSZONE_RESOURCEGROUP} -z ${DNSZONE} -n ${IDENTIFIER}"
-echo "az network dns record-set txt delete -g ${DNSZONE_RESOURCEGROUP} -z ${DNSZONE} -n ${IDENTIFIER}"
-echo ""
-echo "Have fun!"
-
-# Enable warnings
-az config set core.only_show_errors=no
